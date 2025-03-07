@@ -11,7 +11,6 @@
           "id": "1572",
           "name": "study",
           "streak": 8,
-          "gold": 10,
           "lastCompleted": "2025-03-07"
         }
       ]
@@ -21,14 +20,13 @@
       "name": "hi",
       "email": "h@hi.com",
       "password": "123",
-      "gold": 10,
+      "gold": 30,
       "habits": [
         {
-          "id": "1741364015042",
+          "id": "1741364200819",
           "name": "hi",
-          "streak": 0,
-          "gold": 0,
-          "lastCompleted": null
+          "streak": 7,
+          "lastCompleted": "2025-03-07"
         }
       ]
     }

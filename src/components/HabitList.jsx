@@ -88,6 +88,7 @@ const HabitList = () => {
             <p>Last completed: {habit.lastCompleted || "Never"}</p>
             <button onClick={() => handleIncrement(habit.id)}>Mark Done</button>
             <button onClick={() => handleDelete(habit.id)}>Delete</button>
+            
           </div>
         ))}
     

@@ -35,7 +35,6 @@ const AddHabit = ({ userId, setHabits }) => {
     const newHabit = {
       name,
       streak: 0,
-      gold: 0,
       lastCompleted: null,
     };
 
