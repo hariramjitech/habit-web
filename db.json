@@ -1,0 +1,13 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "hari",
+      "email": "h@gmail.com",
+      "password": "111",
+      "gold": 0,
+      "habits": []
+    }
+  ],
+  "habits": []
+}
