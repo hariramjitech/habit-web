@@ -1,164 +1,97 @@
 import React, { useState, useEffect } from "react";
 
 const HabitList = () => {
-  const [habits, setHabits] = useState([]);
   const [user, setUser] = useState(null);
-  const [newHabit, setNewHabit] = useState("");
 
-  // ✅ Fetch habits & user data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const habitResponse = await fetch("http://localhost:5000/habits");
-        if (!habitResponse.ok) throw new Error("Failed to fetch habits");
+    const storedUser = localStorage.getItem("currentUser");
+    if (!storedUser) return;
 
-        const habitData = await habitResponse.json();
-        setHabits(habitData);
-
-        const storedUser = JSON.parse(localStorage.getItem("currentUser"));
-        if (storedUser && storedUser.id) {
-          // ✅ Check if user exists in the backend
-          const userResponse = await fetch(`http://localhost:5000/users/${storedUser.id}`);
-          if (userResponse.ok) {
-            const userData = await userResponse.json();
-            setUser(userData);
-          } else {
-            console.error("User not found in backend!");
-            setUser(null);
-          }
-        } else {
-          console.error("No user found in localStorage.");
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
+    const parsedUser = JSON.parse(storedUser);
+    fetchUserData(parsedUser.id);
   }, []);
 
-  // ✅ Handle habit completion & gold rewards
-  const handleIncrement = async (id) => {
-    if (!user || !user.id) {
-      console.error("User not found or missing ID!");
-      return;
+  const fetchUserData = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/users/${userId}`);
+      if (!response.ok) throw new Error("Failed to fetch user");
+
+      const userData = await response.json();
+      setUser(userData);
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
+  };
 
-    const habit = habits.find((h) => h.id === id);
-    if (!habit) return;
+  const handleIncrement = async (habitId) => {
+    if (!user) return;
 
-    const earnedGold = habit.streak % 7 === 6 ? 10 : 0; // Gold every 7 days
+    const updatedHabits = user.habits.map((habit) =>
+      habit.id === habitId
+        ? {
+            ...habit,
+            streak: habit.streak + 1,
+            lastCompleted: new Date().toISOString().split("T")[0],
+          }
+        : habit
+    );
 
-    const updatedHabit = {
-      ...habit,
-      streak: habit.streak + 1,
-      lastCompleted: new Date().toISOString().split("T")[0],
-      gold: (habit.gold || 0) + earnedGold,
-    };
+    const goldReward = user.habits.find((habit) => habit.id === habitId)?.streak % 7 === 6 ? 10 : 0;
 
-    const updatedUser = {
-      ...user,
-      gold: user.gold + earnedGold, // Update user's total gold
-    };
+    const updatedUser = { ...user, habits: updatedHabits, gold: user.gold + goldReward };
 
     try {
-      console.log(`Updating habit at: http://localhost:5000/habits/${id}`);
-      console.log(`Updating user at: http://localhost:5000/users/${user.id}`);
-
-      // ✅ Update habit in backend
-      const habitResponse = await fetch(`http://localhost:5000/habits/${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedHabit),
-      });
-
-      if (!habitResponse.ok) throw new Error("Failed to update habit");
-
-      // ✅ Update user in backend
-      const userResponse = await fetch(`http://localhost:5000/users/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedUser),
-      });
-
-      if (!userResponse.ok) throw new Error("Failed to update user");
-
-      // ✅ Update localStorage & state
-      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
-      setUser(updatedUser);
-      setHabits((prev) => prev.map((h) => (h.id === id ? updatedHabit : h)));
-
+      await updateUser(updatedUser);
     } catch (error) {
       console.error("Error updating habit:", error);
     }
   };
 
-  // ✅ Handle habit deletion
-  const handleDelete = async (id) => {
+  const handleDelete = async (habitId) => {
+    if (!user) return;
+
+    const updatedUser = {
+      ...user,
+      habits: user.habits.filter((habit) => habit.id !== habitId),
+    };
+
     try {
-      const response = await fetch(`http://localhost:5000/habits/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) throw new Error("Failed to delete habit");
-
-      setHabits((prev) => prev.filter((h) => h.id !== id));
+      await updateUser(updatedUser);
     } catch (error) {
       console.error("Error deleting habit:", error);
     }
   };
 
-  // ✅ Handle adding a new habit
-  const handleAddHabit = async () => {
-    if (!newHabit.trim()) return alert("Habit name cannot be empty!");
-
-    const newHabitObj = {
-      name: newHabit,
-      streak: 0,
-      gold: 0,
-      lastCompleted: null,
-    };
-
+  const updateUser = async (updatedUser) => {
     try {
-      const response = await fetch("http://localhost:5000/habits", {
-        method: "POST",
+      await fetch(`http://localhost:5000/users/${updatedUser.id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newHabitObj),
+        body: JSON.stringify(updatedUser),
       });
-
-      if (!response.ok) throw new Error("Failed to add habit");
-
-      const savedHabit = await response.json();
-      setHabits((prev) => [...prev, savedHabit]);
-      setNewHabit("");
+      setUser(updatedUser);
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser)); // Keep localStorage in sync
     } catch (error) {
-      console.error("Error adding habit:", error);
+      console.error("Error updating user:", error);
     }
   };
 
   return (
     <div className="habit-list">
-
-      {/* ✅ Display habits */}
-      {habits.length === 0 ? <p>No habits found.</p> : null}
-      {habits.map((habit) => (
-        <div key={habit.id} className="habit-card">
-          <div className="habit-info">
+      <h2>Habit Tracker</h2>
+      {user && user.habits.length === 0 && <p>No habits found.</p>}
+      {user &&
+        user.habits.map((habit) => (
+          <div key={habit.id} className="habit-card">
             <h3>{habit.name}</h3>
             <p>Streak: {habit.streak} days</p>
-            <p>Gold Points: {habit.gold || 0}</p>
             <p>Last completed: {habit.lastCompleted || "Never"}</p>
-          </div>
-          <div className="habit-actions">
             <button onClick={() => handleIncrement(habit.id)}>Mark Done</button>
             <button onClick={() => handleDelete(habit.id)}>Delete</button>
           </div>
-        </div>
-      ))}
-
-      {/* ✅ Display user gold */}
-      {user ? <p><strong>Your Gold:</strong> {user.gold}</p> : <p>No user found.</p>}
+        ))}
+    
+      {user && <p>Your Gold: {user.gold}</p>}
     </div>
   );
 };

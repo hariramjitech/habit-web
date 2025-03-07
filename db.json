@@ -6,16 +6,31 @@
       "email": "h@gmail.com",
       "password": "111",
       "gold": 20,
-      "habits": []
-    }
-  ],
-  "habits": [
+      "habits": [
+        {
+          "id": "1572",
+          "name": "study",
+          "streak": 8,
+          "gold": 10,
+          "lastCompleted": "2025-03-07"
+        }
+      ]
+    },
     {
-      "id": "ffa4",
-      "name": "play",
-      "streak": 7,
+      "id": "2",
+      "name": "hi",
+      "email": "h@hi.com",
+      "password": "123",
       "gold": 10,
-      "lastCompleted": "2025-03-07"
+      "habits": [
+        {
+          "id": "1741364015042",
+          "name": "hi",
+          "streak": 0,
+          "gold": 0,
+          "lastCompleted": null
+        }
+      ]
     }
   ]
 }
