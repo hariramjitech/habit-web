@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 
 const HabitList = () => {
   const [habits, setHabits] = useState([]);
   const [user, setUser] = useState(null);
-  const [newHabit, setNewHabit] = useState(""); // ✅ State for new habit input
+  const [newHabit, setNewHabit] = useState("");
 
   // ✅ Fetch habits & user data
   useEffect(() => {
@@ -15,8 +15,21 @@ const HabitList = () => {
         const habitData = await habitResponse.json();
         setHabits(habitData);
 
-        const currentUser = JSON.parse(localStorage.getItem("currentUser"));
-        setUser(currentUser);
+        const storedUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (storedUser && storedUser.id) {
+          // ✅ Check if user exists in the backend
+          const userResponse = await fetch(`http://localhost:5000/users/${storedUser.id}`);
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            setUser(userData);
+          } else {
+            console.error("User not found in backend!");
+            setUser(null);
+          }
+        } else {
+          console.error("No user found in localStorage.");
+          setUser(null);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -27,40 +40,55 @@ const HabitList = () => {
 
   // ✅ Handle habit completion & gold rewards
   const handleIncrement = async (id) => {
-    if (!user) return;
+    if (!user || !user.id) {
+      console.error("User not found or missing ID!");
+      return;
+    }
 
     const habit = habits.find((h) => h.id === id);
     if (!habit) return;
+
+    const earnedGold = habit.streak % 7 === 6 ? 10 : 0; // Gold every 7 days
 
     const updatedHabit = {
       ...habit,
       streak: habit.streak + 1,
       lastCompleted: new Date().toISOString().split("T")[0],
-      gold: (habit.gold || 0) + (habit.streak % 7 === 6 ? 10 : 0), // Rewards every 7 days
+      gold: (habit.gold || 0) + earnedGold,
     };
 
     const updatedUser = {
       ...user,
-      gold: user.gold + (habit.streak % 7 === 6 ? 10 : 0),
+      gold: user.gold + earnedGold, // Update user's total gold
     };
 
     try {
-      await fetch(`http://localhost:5000/habits/${id}`, {
+      console.log(`Updating habit at: http://localhost:5000/habits/${id}`);
+      console.log(`Updating user at: http://localhost:5000/users/${user.id}`);
+
+      // ✅ Update habit in backend
+      const habitResponse = await fetch(`http://localhost:5000/habits/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedHabit),
       });
 
-      await fetch(`http://localhost:5000/users/${user.id}`, {
+      if (!habitResponse.ok) throw new Error("Failed to update habit");
+
+      // ✅ Update user in backend
+      const userResponse = await fetch(`http://localhost:5000/users/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedUser),
       });
 
-      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+      if (!userResponse.ok) throw new Error("Failed to update user");
 
+      // ✅ Update localStorage & state
+      localStorage.setItem("currentUser", JSON.stringify(updatedUser));
       setUser(updatedUser);
       setHabits((prev) => prev.map((h) => (h.id === id ? updatedHabit : h)));
+
     } catch (error) {
       console.error("Error updating habit:", error);
     }
@@ -103,7 +131,7 @@ const HabitList = () => {
 
       const savedHabit = await response.json();
       setHabits((prev) => [...prev, savedHabit]);
-      setNewHabit(""); // ✅ Reset input field after adding
+      setNewHabit("");
     } catch (error) {
       console.error("Error adding habit:", error);
     }
@@ -111,7 +139,6 @@ const HabitList = () => {
 
   return (
     <div className="habit-list">
- 
 
       {/* ✅ Display habits */}
       {habits.length === 0 ? <p>No habits found.</p> : null}
@@ -129,6 +156,9 @@ const HabitList = () => {
           </div>
         </div>
       ))}
+
+      {/* ✅ Display user gold */}
+      {user ? <p><strong>Your Gold:</strong> {user.gold}</p> : <p>No user found.</p>}
     </div>
   );
 };

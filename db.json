@@ -1,13 +1,21 @@
 {
   "users": [
     {
-      "id": 1,
+      "id": "1",
       "name": "hari",
       "email": "h@gmail.com",
       "password": "111",
-      "gold": 0,
+      "gold": 20,
       "habits": []
     }
   ],
-  "habits": []
+  "habits": [
+    {
+      "id": "ffa4",
+      "name": "play",
+      "streak": 7,
+      "gold": 10,
+      "lastCompleted": "2025-03-07"
+    }
+  ]
 }
