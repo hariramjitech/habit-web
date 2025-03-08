@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import './HabitList.css';
+
 
 const HabitList = () => {
   const [user, setUser] = useState(null);
@@ -92,7 +94,7 @@ const HabitList = () => {
           </div>
         ))}
     
-      {user && <p>Your Gold: {user.gold}</p>}
+  
     </div>
   );
 };

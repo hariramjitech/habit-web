@@ -1,11 +1,11 @@
-import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from "react";  // ✅ Ensure useState is imported
+import { useNavigate, Link } from "react-router-dom"; // ✅ Ensure useNavigate is imported
 
 const Login = ({ setAuthenticated }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const navigate = useNavigate();
+  const [error, setError] = useState(""); // ✅ Added missing setError definition
+  const navigate = useNavigate(); // ✅ Added missing navigate definition
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -17,21 +17,24 @@ const Login = ({ setAuthenticated }) => {
       const user = users.find((u) => u.email === email && u.password === password);
 
       if (user) {
-        localStorage.setItem("currentUser", JSON.stringify({
+        const userData = {
           id: user.id,
           name: user.name,
           email: user.email,
           gold: user.gold,
-          habits: user.habits
-        })); 
-        localStorage.setItem("authenticated", "true"); 
-        setAuthenticated(true);
-        navigate("/profile"); 
+          habits: user.habits || [],
+        };
+
+        localStorage.setItem("currentUser", JSON.stringify(userData));
+        localStorage.setItem("authenticated", "true");
+
+        setAuthenticated(true); // ✅ Fixed undefined setAuthenticated
+        navigate("/profile");   // ✅ Fixed undefined navigate
       } else {
-        setError("Invalid email or password");
+        setError("Invalid email or password"); // ✅ Fixed undefined setError
       }
     } catch (err) {
-      setError("Error connecting to server");
+      setError("Error connecting to server"); // ✅ Fixed undefined setError
     }
   };
 

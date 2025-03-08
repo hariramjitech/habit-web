@@ -5,13 +5,13 @@
       "name": "hari",
       "email": "h@gmail.com",
       "password": "111",
-      "gold": 20,
+      "gold": 40,
       "habits": [
         {
-          "id": "1572",
-          "name": "study",
-          "streak": 8,
-          "lastCompleted": "2025-03-07"
+          "id": "1741441049099",
+          "name": "hi",
+          "streak": 0,
+          "lastCompleted": null
         }
       ]
     },
@@ -23,10 +23,16 @@
       "gold": 30,
       "habits": [
         {
-          "id": "1741364200819",
+          "id": "1741441260894",
           "name": "hi",
-          "streak": 7,
-          "lastCompleted": "2025-03-07"
+          "streak": 8,
+          "lastCompleted": "2025-03-08"
+        },
+        {
+          "id": "1741441645092",
+          "name": "hai",
+          "streak": 9,
+          "lastCompleted": "2025-03-08"
         }
       ]
     }
