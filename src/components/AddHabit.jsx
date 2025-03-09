@@ -11,6 +11,10 @@ const AddHabit = ({ userId, setHabits }) => {
     setTimeout(() => setAlertMessage(""), 3000); // Auto-dismiss alert after 3 seconds
   };
 
+
+
+  
+
   const addHabit = async (habit) => {
     if (!userId) {
       console.error("Error: User ID is missing.");
